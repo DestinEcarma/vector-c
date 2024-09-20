@@ -77,7 +77,7 @@ vector_free(int_arr_vec);
 vector_free(point_vec);
 
 // Since we are storing a vector of vector of integers,
-// we have to interate over the inner vector and free them
+// we have to iterate over the inner vector and free them
 
 for (int i = 0; i < (int)vector_length(int_vec_vec); i++) {
     vector_free(int_vec_vec[i]);
