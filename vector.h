@@ -8,7 +8,7 @@ typedef void *Vector;
 
 // Public functions
 
-Vector new_vector(size_t typeSize);
+Vector new_vector(size_t size_type);
 
 void vector_free(Vector vector);
 size_t vector_length(Vector vector);

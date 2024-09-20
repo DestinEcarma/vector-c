@@ -7,7 +7,7 @@
 typedef struct {
 	size_t length;
 	size_t capacity;
-	size_t typeSize;
+	size_t size_type;
 	unsigned char data[];
 } VectorHeader;
 
@@ -17,7 +17,7 @@ VectorHeader *_vector_header(Vector vector) {
 
 VectorHeader *_vector_realloc(VectorHeader *header) {
 	size_t newCapacity = header->capacity == 0 ? 1 : header->capacity * 2;
-	size_t size = sizeof(VectorHeader) + newCapacity * header->typeSize;
+	size_t size = sizeof(VectorHeader) + newCapacity * header->size_type;
 
 	VectorHeader *newHeader = realloc(header, size);
 
@@ -28,12 +28,12 @@ VectorHeader *_vector_realloc(VectorHeader *header) {
 	return newHeader;
 }
 
-Vector new_vector(size_t typeSize) {
+Vector new_vector(size_t size_type) {
 	VectorHeader *header = malloc(sizeof(VectorHeader));
 
 	header->length = 0;
 	header->capacity = 0;
-	header->typeSize = typeSize;
+	header->size_type = size_type;
 
 	return &header->data;
 }
@@ -60,8 +60,8 @@ bool _vector_push(Vector *vector, void *element) {
 		header = newHeader;
 	}
 
-	void *dest = header->data + header->length * header->typeSize;
-	memcpy(dest, element, header->typeSize);
+	void *dest = header->data + header->length * header->size_type;
+	memcpy(dest, element, header->size_type);
 	header->length++;
 
 	return true;
@@ -75,5 +75,5 @@ void *_vector_pop(Vector *vector) {
 	}
 
 	header->length--;
-	return header->data + header->length * header->typeSize;
+	return header->data + header->length * header->size_type;
 }
