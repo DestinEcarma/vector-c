@@ -5,32 +5,83 @@
 typedef struct {
 	int x;
 	int y;
-} Point, Line[2];
+} Point;
 
 int main() {
-	Line *vector = newVector(sizeof(Line));
+	// * Creating vectors
 
-	int n = 10;
+	// Vector of integers
+	int *int_vec = new_vector(sizeof(int));
 
-	printf("Push the elements\n");
+	// Vector of array of integers with size 10
+	int(*int_arr_vec)[10] = new_vector(sizeof(int[10]));
 
-	for (int i = 0; i < n; i++) {
-		Line line = {{i, n - i}, {-n + i, -i}};
+	// Vector of structures
+	Point *point_vec = new_vector(sizeof(Point));
 
-		vectorPush(vector, line);
+	// Vector of vector of integers
+	int **int_vec_vec = new_vector(sizeof(int *));
+	// This means that we can also store vector of vector ... of vector of
+	// structs.
 
-		printf("Line: (%d, %d) (%d, %d)\n", vector[i][0].x, vector[i][0].y,
-			   vector[i][1].x, vector[i][1].y);
+	// * Pushing elements
+
+	// The vector does not work for literals, so you need to create a variable
+	int number = 5;
+	int arr[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+	Point point = {1, 2};
+
+	// There is no need to pass the address of `int_vec` and `number`,
+	// converting them into addresses is already being handled by the macro
+	vector_push(int_vec, number);
+
+	vector_push(int_arr_vec, arr);
+	vector_push(point_vec, point);
+	vector_push(int_vec_vec, int_vec);
+
+	// * Accessing elements
+
+	printf("int_vec[0] = %d\n", int_vec[0]);
+	printf("int_arr_vec[0][0] = %d\n", int_arr_vec[0][0]);
+	printf("point_vec[0].x = %d, point_vec[0].y = %d\n", point_vec[0].x,
+		   point_vec[0].y);
+	printf("int_vec_vec[0][0] = %d\n", int_vec_vec[0][0]);
+
+	// * Popping elements
+
+	int popped_number = *(int *)vector_pop(int_vec);
+
+	// Since we are storing an array of integers,
+	// we have to use a pointer to store the popped array
+	int(*popped_arr)[10] = vector_pop(int_arr_vec);
+
+	Point popped_point = *(Point *)vector_pop(point_vec);
+
+	// Note: This is a vector of vector of integers,
+	// so we have to consider freeing the inner vector
+	// once we are done with it.
+	int *popped_int_vec = *(int **)vector_pop(int_vec_vec);
+
+	printf("Popped number: %d\n", popped_number);
+	printf("Popped arr[0]: %d\n", (*popped_arr)[0]);
+	printf("Popped point.x: %d, Popped point.y: %d\n", popped_point.x,
+		   popped_point.y);
+	printf("Popped int_vec[0]: %d\n", popped_int_vec[0]);
+
+	// * Freeing vectors
+
+	vector_free(int_vec);
+	vector_free(int_arr_vec);
+	vector_free(point_vec);
+
+	// Since we are storing a vector of vector of integers,
+	// we have to interate over the inner vector and free them
+
+	for (int i = 0; i < (int)vector_length(int_vec_vec); i++) {
+		vector_free(int_vec_vec[i]);
 	}
 
-	printf("\nPop the elements\n");
-
-	while (vectorLength(vector) > 0) {
-		Line *line = vectorPop(vector);
-
-		printf("Line: (%d, %d) (%d, %d)\n", (*line)[0].x, (*line)[0].y,
-			   (*line)[1].x, (*line)[1].y);
-	}
+	vector_free(int_vec_vec);
 
 	return 0;
 }

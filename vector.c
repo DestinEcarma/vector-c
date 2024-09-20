@@ -4,8 +4,6 @@
 
 #include "vector.h"
 
-// Private types
-
 typedef struct {
 	size_t length;
 	size_t capacity;
@@ -13,25 +11,11 @@ typedef struct {
 	unsigned char data[];
 } VectorHeader;
 
-// Public functions
-
-Vector newVector(size_t typeSize) {
-	VectorHeader *header = malloc(sizeof(VectorHeader));
-
-	header->length = 0;
-	header->capacity = 0;
-	header->typeSize = typeSize;
-
-	return &header->data;
-}
-
-// Private functions
-
-VectorHeader *vectorHeader(Vector vector) {
+VectorHeader *_vector_header(Vector vector) {
 	return (VectorHeader *)vector - 1;
 }
 
-VectorHeader *vectorRealloc(VectorHeader *header) {
+VectorHeader *_vector_realloc(VectorHeader *header) {
 	size_t newCapacity = header->capacity == 0 ? 1 : header->capacity * 2;
 	size_t size = sizeof(VectorHeader) + newCapacity * header->typeSize;
 
@@ -44,15 +28,29 @@ VectorHeader *vectorRealloc(VectorHeader *header) {
 	return newHeader;
 }
 
-size_t _vectorLength(Vector *vector) {
-	return vectorHeader(*vector)->length;
+Vector new_vector(size_t typeSize) {
+	VectorHeader *header = malloc(sizeof(VectorHeader));
+
+	header->length = 0;
+	header->capacity = 0;
+	header->typeSize = typeSize;
+
+	return &header->data;
 }
 
-bool _vectorPush(Vector *vector, void *element) {
-	VectorHeader *header = vectorHeader(*vector);
+void vector_free(Vector vector) {
+	free(_vector_header(vector));
+}
+
+size_t vector_length(Vector vector) {
+	return _vector_header(vector)->length;
+}
+
+bool _vector_push(Vector *vector, void *element) {
+	VectorHeader *header = _vector_header(*vector);
 
 	if (header->length == header->capacity) {
-		VectorHeader *newHeader = vectorRealloc(header);
+		VectorHeader *newHeader = _vector_realloc(header);
 
 		if (newHeader == NULL) {
 			return false;
@@ -69,8 +67,8 @@ bool _vectorPush(Vector *vector, void *element) {
 	return true;
 }
 
-void *_vectorPop(Vector *vector) {
-	VectorHeader *header = vectorHeader(*vector);
+void *_vector_pop(Vector *vector) {
+	VectorHeader *header = _vector_header(*vector);
 
 	if (header->length == 0) {
 		return NULL;

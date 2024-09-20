@@ -8,18 +8,18 @@ typedef void *Vector;
 
 // Public functions
 
-Vector newVector(size_t typeSize);
+Vector new_vector(size_t typeSize);
 
-#define vectorLength(vector) (_vectorLength((Vector *)&vector))
+void vector_free(Vector vector);
+size_t vector_length(Vector vector);
 
-#define vectorPush(vector, element) (_vectorPush((Vector *)&vector, &element))
-#define vectorPop(vector) (_vectorPop((Vector *)&vector))
+#define vector_push(vector, element)                                           \
+	(_vector_push((Vector *)&(vector), &element))
+#define vector_pop(vector) (_vector_pop((Vector *)&vector))
 
 // Private functions
 
-size_t _vectorLength(Vector *vector);
-
-bool _vectorPush(Vector *vector, void *element);
-void *_vectorPop(Vector *vector);
+bool _vector_push(Vector *vector, void *element);
+void *_vector_pop(Vector *vector);
 
 #endif
