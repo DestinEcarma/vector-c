@@ -51,8 +51,13 @@ int main() {
 
 	int popped_number = *(int *)vector_pop(int_vec);
 
-	// Since we are storing an array of integers,
-	// we have to use a pointer to store the popped array
+	// Since we are storing an array of integers, we have to use a
+	// pointer to store the popped array. We also have to consider
+	// copying the array to another array, since the popped array
+	// will be altered once we insert another array. This is because
+	// the function `vector_pop` returns a pointer that is part of
+	// the vector data. This means that if we insert another array,
+	// the `popped_arr` will be altered.
 	int(*popped_arr)[10] = vector_pop(int_arr_vec);
 
 	Point popped_point = *(Point *)vector_pop(point_vec);
