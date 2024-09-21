@@ -13,6 +13,8 @@ Vector new_vector(size_t size_type);
 void vector_free(Vector vector);
 size_t vector_length(Vector vector);
 
+bool vector_reserve(Vector *vector, size_t capacity);
+
 #define vector_push(vector, element)                                           \
 	(_vector_push((Vector *)&(vector), &element))
 #define vector_pop(vector) (_vector_pop((Vector *)&vector))
