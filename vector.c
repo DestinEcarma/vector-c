@@ -94,5 +94,5 @@ void *_vector_pop(Vector *vector) {
 		return NULL;
 	}
 
-	return header->data + header->length-- * header->size_type;
+	return header->data + --header->length * header->size_type;
 }
