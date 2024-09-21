@@ -49,7 +49,7 @@ size_t vector_length(Vector vector) {
 	return _vector_header(vector)->length;
 }
 
-bool vector_reserve(Vector *vector, size_t capacity) {
+bool _vector_reserve(Vector *vector, size_t capacity) {
 	VectorHeader *header = _vector_header(*vector);
 
 	if (header->capacity < capacity) {
