@@ -17,7 +17,11 @@ int main() {
 	int(*int_arr_vec)[10] = new_vector(sizeof(int[10]));
 
 	// Vector of structures
-	Point *point_vec = new_vector(sizeof(Point));
+	struct Point {
+		int x;
+		int y;
+	};
+	struct Point *point_vec = new_vector(sizeof(struct Point));
 
 	// Vector of vector of integers
 	int **int_vec_vec = new_vector(sizeof(int *));
@@ -26,13 +30,13 @@ int main() {
 
 	// * Pushing elements
 
-	// The vector does not work for literals, so you need to create a variable
+	// The vector does not work for literals; so you need to create a variable.
 	int number = 5;
 	int arr[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-	Point point = {1, 2};
+	struct Point point = {1, 2};
 
 	// There is no need to pass the address of `int_vec` and `number`,
-	// converting them into addresses is already being handled by the macro
+	// converting them into addresses is already being handled by the macro.
 	vector_push(int_vec, number);
 
 	vector_push(int_arr_vec, arr);
@@ -62,9 +66,8 @@ int main() {
 
 	Point popped_point = *(Point *)vector_pop(point_vec);
 
-	// Note: This is a vector of vector of integers,
-	// so we have to consider freeing the inner vector
-	// once we are done with it.
+	// Note: This is a vector of vector of integers, so we have to
+	// consider freeing the inner vector once we are done with it.
 	int *popped_int_vec = *(int **)vector_pop(int_vec_vec);
 
 	printf("Popped number: %d\n", popped_number);
@@ -80,7 +83,7 @@ int main() {
 	vector_free(point_vec);
 
 	// Since we are storing a vector of vector of integers,
-	// we have to iterate over the inner vector and free them
+	// we have to iterate over the inner vector and free them.
 
 	for (int i = 0; i < (int)vector_length(int_vec_vec); i++) {
 		vector_free(int_vec_vec[i]);

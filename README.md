@@ -21,19 +21,20 @@ struct Point *point_vec = new_vector(sizeof(struct Point));
 
 // Vector of vector of integers
 int **int_vec_vec = new_vector(sizeof(int *));
-// This means that we can also store vector of vector ... of vector of structs.
+// This means that we can also store vector of vector ... of vector of
+// structs.
 ```
 
 Adding elements to the vector:
 
 ```c
-// The vector does not work for literals, so you need to create a variable
+// The vector does not work for literals; so you need to create a variable.
 int number = 5;
 int arr[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 struct Point point = {1, 2};
 
 // There is no need to pass the address of `int_vec` and `number`,
-// converting them into addresses is already being handled by the macro
+// converting them into addresses is already being handled by the macro.
 vector_push(int_vec, number);
 
 vector_push(int_arr_vec, arr);
@@ -68,9 +69,8 @@ int(*popped_arr)[10] = vector_pop(int_arr_vec);
 
 Point popped_point = *(Point *)vector_pop(point_vec);
 
-// Note: This is a vector of vector of integers,
-// so we have to consider freeing the inner vector
-// once we are done with it.
+// Note: This is a vector of vector of integers, so we have to
+// consider freeing the inner vector once we are done with it.
 int *popped_int_vec = *(int **)vector_pop(int_vec_vec);
 ```
 
@@ -82,7 +82,7 @@ vector_free(int_arr_vec);
 vector_free(point_vec);
 
 // Since we are storing a vector of vector of integers,
-// we have to iterate over the inner vector and free them
+// we have to iterate over the inner vector and free them.
 
 for (int i = 0; i < (int)vector_length(int_vec_vec); i++) {
     vector_free(int_vec_vec[i]);
@@ -100,13 +100,55 @@ These vectors can be manipulated in a similar manner in `Rust` using `Vec` and i
 The reason for this operation to work is that the vector is a pointer to the data, and the data is stored directly with a special header that contains the size and capacity of the vector.
 
 ```
-
 +--------+-------------+
 | Header | Vector data |
 +--------+-------------+
          |
          `-> Pointer returned to the user.
-
 ```
 
 This design was inspired by anitrez's [Simple Dynamic Strings](https://github.com/antirez/sds/).
+
+To really understand how this works, let's take a look at the `Header`, which is defined in the [`vector.c`](vector.c) file:
+
+```c
+typedef struct {
+	size_t length;
+	size_t capacity;
+	size_t size_type;
+	unsigned char data[];
+} VectorHeader;
+```
+
+So we can see that the `Header` contains the `length` of the vector, the `capacity` of the vector, the `size_type` of the vector, and the `data` of the vector.
+
+The `size_t` is defined as `unsigned long`; in most cases, the byte size of this type is $8$ bytes. The `data` field is an array of `unsigned char` with an array size of $0$, which is a byte size of $0$. So the `Header` is $24$ bytes in total.
+
+The most important thing here to recognize is the data type of `data`, which is an `unsigned char` of $0$ elements. Since we are returning the address of the `data` field, this allows us to find the address of the `Header` where the `data` field is located.
+
+Illustration of the `Header`:
+
+```
+8 Bytes  8 Bytes    8 Bytes     0 Bytes
+^        ^          ^           ^
+|        |          |           |
++--------+----------+-----------+------+
+| length | capacity | size_type | data |
++--------+----------+-----------+------+
+                                |
+                                `-> Pointer returned to the user.
+```
+
+This simple illustration shows that the `Header` is actually only available up to the field `size_type`. The `data` field allows us to access the `Header` of the returned pointer.
+
+The function definition that allows us to access the `Header` is defined in the [`vector.c`](vector.c) file:
+
+```c
+VectorHeader *_vector_header(Vector vector) {
+	return (VectorHeader *)vector - 1;
+}
+```
+
+`vector` is the pointer returned to the user, and we change the type of the pointer to `VectorHeader` converting it to a byte size of $24$ bytes. We then subtract $1$ from the pointer, which means that we are moving the pointer to the `Header` of the vector.
+
+This works because the `data` field is the last field in the `Header` and is also the last accessible address of the `Header`. This means that we can access the `Header` of the vector by subtracting $1$ from the pointer. You can even think of the `data` field as not part of the `Header`. This is why we can access the `Header` of the vector by subtracting $1$ from the pointer.
