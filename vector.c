@@ -31,6 +31,10 @@ VectorHeader *_vector_realloc(VectorHeader *header) {
 Vector new_vector(size_t size_type) {
 	VectorHeader *header = malloc(sizeof(VectorHeader));
 
+	if (header == NULL) {
+		return NULL;
+	}
+
 	header->length = 0;
 	header->capacity = 0;
 	header->size_type = size_type;
