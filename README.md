@@ -152,3 +152,58 @@ VectorHeader *_vector_header(Vector vector) {
 `vector` is the pointer returned to the user, and we change the type of the pointer to `VectorHeader` converting it to a byte size of $24$ bytes. We then subtract $1$ from the pointer, which means that we are moving the pointer to the `Header` of the vector.
 
 This works because the `data` field is the last field in the `Header` and is also the last accessible address of the `Header`. This means that we can access the `Header` of the vector by subtracting $1$ from the pointer. You can even think of the `data` field as not part of the `Header`. This is why we can access the `Header` of the vector by subtracting $1$ from the pointer.
+
+You may wonder how pushing an element even works. Let's examine the process of creating the vector.
+
+```c
+Vector new_vector(size_t size_type) {
+	VectorHeader *header = malloc(sizeof(VectorHeader));
+
+	if (header == NULL) {
+		return NULL;
+	}
+
+	header->length = 0;
+	header->capacity = 0;
+	header->size_type = size_type;
+
+	return &header->data;
+}
+```
+
+The function creates a new `Header` then returns the address of the `data` field. We can see that we set the size of the memory allocated to a byte size of $24$ bytes. This means that the vector is currently empty.
+
+When we push an element to the vector, we first have to check if the vector is full. If the vector is full, we have to reallocate the `Header`'s memory to a new size. This is done on the `_vector_realloc` function.
+
+```c
+VectorHeader *_vector_realloc(VectorHeader *header, size_t newCapacity) {
+	size_t size = sizeof(VectorHeader) + newCapacity * header->size_type;
+
+	VectorHeader *newHeader = realloc(header, size);
+
+	if (newHeader != NULL) {
+		newHeader->capacity = newCapacity;
+	}
+
+	return newHeader;
+}
+```
+
+The function takes the `Header` of the vector and the new capacity that we want to reallocate onto the `Header`. We then calculate the size of the memory that we want to reallocate. First we have to get the size of the `Header` which is a byte size of $24$ bytes, then we add the new amount of memory that we want to reallocate.
+
+Let's consider a vector of integers with a capacity of $2$, assuming the byte size of an integer is $4$ bytes. The size of the memory that we want to reallocate is $24 + 2 * 4 = 32$ bytes. The `Header` is $24$ bytes, and the `data` is $8$ bytes. This means that we are now able to store an element on the `data` field, without worrying about it being overwritten, or a getting segmentation fault.
+
+Illustration of the new `Header`:
+
+```
+8 Bytes  8 Bytes    8 Bytes     8 Bytes
+^        ^          ^           ^
+|        |          |           |
++--------+----------+-----------+------+
+| length | capacity | size_type | data |
++--------+----------+-----------+------+
+```
+
+The purpose of reallocation is to make space for the array of `unsigned char`. If you were to set an element at an index that is out of the scope of the `Header`'s memory block. And when a reallocation were to occur, the index that was out of scope would be overwritten. This is why we have to use the proper functions to push an element to the vector.
+
+You can also use the function `vector_reserve` to reserve a certain amount of memory for the vector. This is useful when you know the amount of memory that you want to reserve for the vector.
