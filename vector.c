@@ -81,9 +81,8 @@ bool _vector_push(Vector *vector, void *element) {
 		header = newHeader;
 	}
 
-	void *dest = header->data + header->length * header->size_type;
+	void *dest = header->data + header->length++ * header->size_type;
 	memcpy(dest, element, header->size_type);
-	header->length++;
 
 	return true;
 }
@@ -95,6 +94,5 @@ void *_vector_pop(Vector *vector) {
 		return NULL;
 	}
 
-	header->length--;
-	return header->data + header->length * header->size_type;
+	return header->data + header->length-- * header->size_type;
 }
