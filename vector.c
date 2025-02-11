@@ -20,9 +20,11 @@ VectorHeader *_vector_realloc(VectorHeader *header, size_t newCapacity) {
 
 	VectorHeader *newHeader = realloc(header, size);
 
-	if (newHeader != NULL) {
-		newHeader->capacity = newCapacity;
+	if (newHeader == NULL) {
+		return header;
 	}
+
+	newHeader->capacity = newCapacity;
 
 	return newHeader;
 }
